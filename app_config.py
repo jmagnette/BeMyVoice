@@ -13,14 +13,14 @@ class AppConfig:
         "outputs": [
             "default"
         ],
-        "hotkeys": [
-            {"toggle_overlay": "ctrl+altgr+enter"}
-        ],
+        "hotkeys": {
+            "toggle_overlay": "ctrl+shift+plus"
+        },
         "overlay": {
             "x": 100,
             "y": 100,
             "width": 400,
-            "height": 100
+            "height": 200
         }
     }
 

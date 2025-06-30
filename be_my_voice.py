@@ -1,25 +1,31 @@
 import threading
 
-import tts
 import asyncio
-from app_config import AppConfig
+import time
 import tkinter as tk
 import keyboard
 import logger
+from app_config import AppConfig
+from tts.edge import EdgeTTS
+from interpreter.command_interpreter import CommandInterpreter
+from interpreter.tts_interpreter import TtsInterpreter
+from soundplayer.multi_output_player import MultiOutputPlayer
 
 
-def start_async_loop():
+def start_async_loop(app):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+
+    app.loop = loop
+    app.queue = asyncio.Queue()
+    loop.create_task(app.worker())
     loop.run_forever()
 
 
 class BeMyVoice:
     ENGINE_DICT = {
-        "edgeTTS": tts.EdgeTTS
+        "edgeTTS": EdgeTTS
     }
-
-    TEXT_SEPARATOR = ";"
 
 
     def __init__(self, config_path):
@@ -37,9 +43,9 @@ class BeMyVoice:
         self.offset_y = 0
         self._create_overlay_window()
 
-        self.queue = asyncio.Queue()
+        self.loop = None
+        self.queue = None
         self.interrupted = False
-        asyncio.create_task(self._worker())
 
     def _init_engine(self, engine_config):
         try:
@@ -50,11 +56,11 @@ class BeMyVoice:
             raise
 
     def _init_sound_player(self):
-        self.sound_player = None
+        self.sound_player = MultiOutputPlayer(self.app_config.outputs_config)
 
     def _init_interpreters(self):
-        self.tts_interpreter = None
-        self.command_interpreter = None
+        self.tts_interpreter = TtsInterpreter(self.tts_engine, self.sound_player)
+        self.command_interpreter = CommandInterpreter(self.tts_engine, self.sound_player)
 
     def _create_overlay_window(self):
         self.root = tk.Tk()
@@ -119,7 +125,7 @@ class BeMyVoice:
 
         self.interrupted = False
 
-    async def _worker(self):
+    async def worker(self):
         while True:
             entry = await self.queue.get()
 
@@ -134,21 +140,18 @@ class BeMyVoice:
 
             self.queue.task_done()
 
-    def process_input(self, text):
-        if text.strip() == "/stop":
-            self._interrupt()
-        else:
-            self.queue.put_nowait(text)
-
     def _handle_input(self):
         user_input = self.entry.get()
 
         if user_input.strip() == "/stop":
             self._interrupt()
         else:
-            entries = user_input.split(self.TEXT_SEPARATOR)
+            entries = user_input.split(";")
             for entry in entries:
-                self.queue.put_nowait(entry)
+                try:
+                    asyncio.run_coroutine_threadsafe(self.queue.put(entry), self.loop)
+                except RuntimeError:
+                    logger.log_error("⚠️ Async loop not running — cannot send item.")
 
     def run_infinite(self):
         logger.log_info("✅ Type-to-Speak Overlay running.")
@@ -157,6 +160,5 @@ class BeMyVoice:
         logger.log_info(f"💡 Press '{toggle_hotkey}' to toggle the overlay window.")
         logger.log_info("🛑 Press Ctrl+C in terminal to quit.")
 
-        threading.Thread(target=start_async_loop, daemon=True).start()
-
+        threading.Thread(target=start_async_loop, args=(self,), daemon=True).start()
         self.root.mainloop()
