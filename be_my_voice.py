@@ -6,6 +6,7 @@ import tkinter as tk
 import keyboard
 import logger
 from app_config import AppConfig
+from interrupt import Interrupt
 from tts.edge import EdgeTTS
 from interpreter.command_interpreter import CommandInterpreter
 from interpreter.tts_interpreter import TtsInterpreter
@@ -32,6 +33,9 @@ class BeMyVoice:
         self.app_config = AppConfig(config_path)
         self.app_config.load_config()
 
+        self.interrupt = Interrupt()
+        self.interrupt.must_stop = False
+
         self._init_engine(self.app_config.engine_config)
         self._init_sound_player()
         self._init_interpreters()
@@ -45,7 +49,6 @@ class BeMyVoice:
 
         self.loop = None
         self.queue = None
-        self.interrupted = False
 
     def _init_engine(self, engine_config):
         try:
@@ -56,11 +59,11 @@ class BeMyVoice:
             raise
 
     def _init_sound_player(self):
-        self.sound_player = MultiOutputPlayer(self.app_config.outputs_config)
+        self.sound_player = MultiOutputPlayer(self.app_config.outputs_config, self.interrupt)
 
     def _init_interpreters(self):
-        self.tts_interpreter = TtsInterpreter(self.tts_engine, self.sound_player)
-        self.command_interpreter = CommandInterpreter(self.tts_engine, self.sound_player)
+        self.tts_interpreter = TtsInterpreter(self.tts_engine, self.sound_player, self.interrupt)
+        self.command_interpreter = CommandInterpreter(self.tts_engine, self.sound_player, self.interrupt)
 
     def _create_overlay_window(self):
         self.root = tk.Tk()
@@ -107,38 +110,43 @@ class BeMyVoice:
     def _on_enter(self, event=None):
         self._handle_input()
         self.entry.delete(0, tk.END)
-        self.hide_overlay()
+        # Overlay stays visible
 
     def _on_ctrl_enter(self, event=None):
         self._handle_input()
         self.entry.delete(0, tk.END)
-        # Overlay stays visible
+        self.hide_overlay()
 
     def _interrupt(self):
         logger.log_info("[TTS] Interrupt received — clearing queue")
-        self.interrupted = True
+        self.interrupt.must_stop = True
         while not self.queue.empty():
             try:
                 self.queue.get_nowait(); self.queue.task_done()
             except:
                 break
 
-        self.interrupted = False
+        self.interrupt.must_stop = False
 
     async def worker(self):
         while True:
             entry = await self.queue.get()
 
-            if self.interrupted:
+            if self.interrupt.must_stop:
                 self.queue.task_done()
                 continue
 
-            if entry.strip().startswith("/"):
-                await self.command_interpreter.handle_entry(entry.strip())
-            else:
-                await self.tts_interpreter.handle_entry(entry.strip())
+            try:
+                if entry.strip().startswith("/"):
+                    await self.command_interpreter.handle_entry(entry.strip())
+                else:
+                    await self.tts_interpreter.handle_entry(entry.strip())
 
-            self.queue.task_done()
+            except Exception as ex:
+                logger.log_error(f"Unexpected error in worker: {ex}")
+
+            finally:
+                self.queue.task_done()
 
     def _handle_input(self):
         user_input = self.entry.get()

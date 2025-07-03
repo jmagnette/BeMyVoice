@@ -1,3 +1,4 @@
+import os
 import tempfile
 import edge_tts
 from pydub import AudioSegment
@@ -10,11 +11,11 @@ class EdgeTTS:
         self.config = configuration
         self.voice_dict = {x["key"]: x for x in self.config["voices"]}
         self.current_key = self.config["voices"][0]["key"]
-        self.current_voice = self.voice_dict[self.current_key]
+        self.current_voice = self.voice_dict[self.current_key]["voice"]
 
     def change_voice(self, voice_key):
         try:
-            self.current_voice = self.voice_dict[voice_key]
+            self.current_voice = self.voice_dict[voice_key]["voice"]
             self.current_key = voice_key
         except KeyError:
             logger.log_error(f"The given voice key '{voice_key}' does not exist in the configs.")
@@ -29,5 +30,7 @@ class EdgeTTS:
         temp_wav.close()
         audio.export(temp_wav.name, format="wav")
 
-        return temp_wav
+        os.remove(temp.name)
+
+        return temp_wav.name
 

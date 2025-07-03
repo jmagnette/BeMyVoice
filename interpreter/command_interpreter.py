@@ -3,9 +3,10 @@ import logger
 
 class CommandInterpreter:
 
-    def __init__(self, tts_engine, sound_player):
+    def __init__(self, tts_engine, sound_player, interrupt):
         self.tts_engine = tts_engine
         self.sound_player = sound_player
+        self.interrupt = interrupt
 
         self._command_mapping = {
             "/stop": (None, "stops the current playback and empty the queue of commands/tts"),  #handled before in the pipeline
@@ -22,14 +23,16 @@ class CommandInterpreter:
             logger.log_error(f"Unknown command {text_entry}")
 
     def _display_help(self, *args):
+        logger.log_info("I should output help doc")
         help_doc = (f"This program handles the text entry provided depending on the text ans config."
                     f"\nDifferent text/commands can be given in one go by separating them using ';'."
                     f"\nFor example '/help;Hello world'. Every text that doesn't start with a forward slash will be threated by the tts_engine to be synthesized."
                     f"\nThe available commands are:")
-        help_doc += (f"\n\t- {k}: {v[1]}" for k,v in self._command_mapping.items())
+        for k,v in self._command_mapping.items():
+            help_doc += f"\n\t- {k}: {v[1]}"
         logger.log_info(help_doc)
 
     def _list_output_devices(self, *args):
         devices = self.sound_player.get_audio_devices()
-        devices_as_string = (f"\n\t{v}. {k}" for k,v in devices.items)
+        devices_as_string = "".join(f"\n\t{v}. {k}" for k,v in devices.items())
         logger.log_info(f"Available output devices are:{devices_as_string}")

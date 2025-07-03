@@ -1,9 +1,7 @@
 import os
 import sys
-from pydub import AudioSegment
-from pydub.utils import which
-
 import logger
+
 
 # Load configuration
 if getattr(sys, 'frozen', False):
@@ -14,7 +12,11 @@ else:
     base_path = os.path.abspath(".")
 
 CONFIG_PATH = os.path.join(base_path, "config.json")
-AudioSegment.converter = which(os.path.join(base_path,"dependencies", "ffmpeg.exe"))
+
+
+install_path = os.path.abspath(".")
+ffmpeg_path = os.path.join(install_path, "dependencies", "ffmpeg")
+os.environ["PATH"] = ffmpeg_path + os.pathsep + os.environ.get("PATH", "")
 
 
 from be_my_voice import BeMyVoice
