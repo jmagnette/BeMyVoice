@@ -93,7 +93,9 @@ class BeMyVoice:
     def show_overlay(self):
         self.root.deiconify()
         self.root.lift()
+        self.root.focus_force()
         self.entry.focus_set()
+        self.entry.after(100, self.entry.focus_force)
 
     def hide_overlay(self):
         self.root.withdraw()
