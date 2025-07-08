@@ -32,3 +32,8 @@ This TTS was chosen as it provides enough without having to configure too much o
 
     For the pyAudio Wheel, if you are using a different version of python (than 3.12) or have a different system architecture, you can check :
     https://pypi.org/project/PyAudio/#files
+
+# Support
+If this app has helped you and allowed you to smile, don't hesitate to share it !
+
+You can also share that smile with me on https://ko-fi.com/jmagnette (but no obligation to ! )
