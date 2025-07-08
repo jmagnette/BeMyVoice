@@ -11,7 +11,8 @@ class AppConfig:
             ]
         },
         "outputs": [
-            "default"
+            "default",
+            "CABLE Input (VB-Audio Virtual C"
         ],
         "hotkeys": {
             "toggle_overlay": "ctrl+shift+plus"

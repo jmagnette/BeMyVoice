@@ -21,6 +21,10 @@ class EdgeTTS:
         self.current_key = self.config["voices"][0]["key"]
         self.current_voice = self.voice_dict[self.current_key]["voice"]
 
+    async def get_all_voices_async(self):
+        voices = await edge_tts.list_voices()
+        return [voice['ShortName'] for voice in voices]
+
     def change_voice(self, voice_key):
         try:
             self.current_voice = self.voice_dict[voice_key]["voice"]

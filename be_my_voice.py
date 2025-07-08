@@ -155,8 +155,6 @@ class BeMyVoice:
             except:
                 break
 
-        self.interrupt.must_stop = False
-
     async def worker(self):
         while True:
             entry = await self.queue.get()
@@ -178,6 +176,7 @@ class BeMyVoice:
                 self.queue.task_done()
 
     def _handle_input(self):
+        self.interrupt.must_stop = False
         user_input = self.entry.get()
         self.history.append(user_input)
         self.history = self.history[-10:]

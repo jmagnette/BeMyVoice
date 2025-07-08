@@ -76,7 +76,13 @@ class MultiOutputPlayer:
 
     def _create_and_read_audio_stream(self, wf, p, device_index):
         def callback(in_data, frame_count, time_info, status):
+            if self.interrupt.must_stop:
+                return (None, pyaudio.paComplete)
+
             data = wf.readframes(frame_count)
+            if len(data) == 0:
+                return (None, pyaudio.paComplete)
+
             return (data, pyaudio.paContinue)
 
         stream = p.open(
