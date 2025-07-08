@@ -30,6 +30,8 @@ class BeMyVoice:
 
 
     def __init__(self, config_path):
+        self.history = []
+        self.history_index = -1
         self.app_config = AppConfig(config_path)
         self.app_config.load_config()
 
@@ -42,6 +44,7 @@ class BeMyVoice:
 
         # overlay init
         self.root = None
+        self.drag_handle = None
         self.entry = None
         self.offset_x = 0
         self.offset_y = 0
@@ -63,7 +66,7 @@ class BeMyVoice:
 
     def _init_interpreters(self):
         self.tts_interpreter = TtsInterpreter(self.tts_engine, self.sound_player, self.interrupt)
-        self.command_interpreter = CommandInterpreter(self.tts_engine, self.sound_player, self.interrupt)
+        self.command_interpreter = CommandInterpreter(self.tts_engine, self.sound_player, self.interrupt, self.ENGINE_DICT)
 
     def _create_overlay_window(self):
         self.root = tk.Tk()
@@ -74,15 +77,20 @@ class BeMyVoice:
         self.root.geometry(f"{overlay_config["width"]}x{overlay_config["height"]}+{overlay_config["x"]}+{overlay_config["y"]}")
         self.root.withdraw()
 
+        self.drag_handle = tk.Frame(self.root, width=30, height=30, bg="gray")
+        self.drag_handle.pack(anchor="nw", padx=5, pady=5)
+
         self.entry = tk.Entry(self.root, font=("Segoe UI", 16))
-        self.entry.pack(padx=20, pady=30, fill="both", expand=True)
+        self.entry.pack(padx=5, pady=5, fill="both", expand=True)
 
         self.entry.bind("<Return>", self._on_enter)
         self.entry.bind("<Control-Return>", self._on_ctrl_enter)
+        self.entry.bind("<Up>", self._on_up)
+        self.entry.bind("<Down>", self._on_down)
 
         self.root.bind("<Escape>", lambda e: self.hide_overlay())
-        self.root.bind("<Button-1>", self._start_move)
-        self.root.bind("<B1-Motion>", self._do_move)
+        self.drag_handle.bind("<Button-1>", self._start_move)
+        self.drag_handle.bind("<B1-Motion>", self._do_move)
 
     def toggle_overlay(self):
         if self.root.state() == "withdrawn":
@@ -108,6 +116,25 @@ class BeMyVoice:
         x = self.root.winfo_x() + event.x - self.offset_x
         y = self.root.winfo_y() + event.y - self.offset_y
         self.root.geometry(f"+{x}+{y}")
+
+    def _on_down(self, event=None):
+        if self.history_index != -1 and self.history_index < len(self.history) - 1:
+            self.history_index += 1
+        else:
+            self.history_index = -1
+        self._set_text_from_history()
+
+    def _on_up(self, event=None):
+        if self.history_index < 0:
+            self.history_index = len(self.history) - 1
+        elif self.history_index > 0:
+            self.history_index -= 1
+        self._set_text_from_history()
+
+    def _set_text_from_history(self):
+        self.entry.delete(0, tk.END)
+        if self.history_index >= 0:
+            self.entry.insert(tk.END, self.history[self.history_index])
 
     def _on_enter(self, event=None):
         self._handle_input()
@@ -152,6 +179,9 @@ class BeMyVoice:
 
     def _handle_input(self):
         user_input = self.entry.get()
+        self.history.append(user_input)
+        self.history = self.history[-10:]
+        self.history_index = -1
 
         if user_input.strip() == "/stop":
             self._interrupt()

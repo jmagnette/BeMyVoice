@@ -6,8 +6,8 @@ class AppConfig:
         "engine": {
             "tts_engine": "edgeTTS",
             "voices": [
-                {"key": "fr-f", "lang": "fr-FR", "voice":"fr-FR-DeniseNeural"},
-                {"key": "fr-h", "lang": "fr-FR", "voice":"fr-FR-HenriNeural"}
+                {"key": "fr-f", "voice":"fr-FR-DeniseNeural"},
+                {"key": "fr-h", "voice":"fr-FR-HenriNeural"}
             ]
         },
         "outputs": [
@@ -20,7 +20,7 @@ class AppConfig:
             "x": 100,
             "y": 100,
             "width": 400,
-            "height": 200
+            "height": 100
         }
     }
 

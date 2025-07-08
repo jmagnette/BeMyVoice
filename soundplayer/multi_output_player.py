@@ -28,8 +28,10 @@ class MultiOutputPlayer:
         try:
             available_devices = self.get_audio_devices()
             streams = []
+            wave_files = []
             for device_name in self.config:
                 wf = wave.open(wave_file_path, 'rb')
+                wave_files.append(wf)
                 device_info = None
                 if device_name == "default":
                     device_info = p.get_default_output_device_info()
@@ -51,6 +53,11 @@ class MultiOutputPlayer:
                 stream.stop_stream()
                 stream.close()
 
+            for wf in wave_files:
+                wf.close()
+
+        except Exception as ex:
+            logger.log_error(f"error while trying to play sound : {ex}")
         finally:
             p.terminate()
 

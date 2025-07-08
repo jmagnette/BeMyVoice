@@ -7,6 +7,14 @@ import logger
 
 
 class EdgeTTS:
+    EXAMPLE_CONFIG = {
+            "tts_engine": "edgeTTS",
+            "voices": [
+                {"key": "fr-f", "voice":"fr-FR-DeniseNeural"},
+                {"key": "fr-h", "voice":"fr-FR-HenriNeural"}
+            ]
+        }
+
     def __init__(self, configuration, *args):
         self.config = configuration
         self.voice_dict = {x["key"]: x for x in self.config["voices"]}
