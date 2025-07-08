@@ -3,6 +3,10 @@ Project whose purpose is to provide a tool, in the form of a simple overlay, all
 
 The project currently supports only EdgeTTS.
 
+# Dependencies
+Even it is not mandatory, the app was written to output to a virtual microphone to bring the voice (tts generation) to any application. Targeted towards windows users, the free solution found was to use VB Audio. You can download the exe to install it here:
+https://vb-audio.com/Cable/index.htm
+
 # First steps
 To install the app, just download the exe from the release tab.
 
@@ -23,6 +27,7 @@ You can drag the overlay window by dragging the grey square. The position is not
 
 The command line and app language is English, to be able to be used by the many, but the voices chosen for the tts engine can be anything.
 
+# Engines
 ## Edge TTS
 Edge TTS is the Azure "free/demo" version. It supports only a subset of voices and can have some limitations. 
 This TTS was chosen as it provides enough without having to configure too much on client side.
