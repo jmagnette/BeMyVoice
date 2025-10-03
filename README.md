@@ -3,12 +3,17 @@ Project whose purpose is to provide a tool, in the form of a simple overlay, all
 
 The project currently supports only EdgeTTS.
 
+# Support
+If this app has helped you and allowed you to smile, don't hesitate to share it !
+
+You can also share that smile with me on https://ko-fi.com/jmagnette (but no obligation to ! )
+
 # Dependencies
 Even it is not mandatory, the app was written to output to a virtual microphone to bring the voice (tts generation) to any application. Targeted towards windows users, the free solution found was to use VB Audio. You can download the exe to install it here:
 https://vb-audio.com/Cable/index.htm
 
 # First steps
-To install the app, just download the exe from the release tab.
+To install the app, just download the zip from the release tab and extract in a folder where you have write access.
 
 At first run, the "config.json" file will be created next to the exe. It is in that file that you can parametrise what you want, which engine, voices, ...
 
@@ -38,7 +43,9 @@ This TTS was chosen as it provides enough without having to configure too much o
     For the pyAudio Wheel, if you are using a different version of python (than 3.12) or have a different system architecture, you can check :
     https://pypi.org/project/PyAudio/#files
 
-# Support
-If this app has helped you and allowed you to smile, don't hesitate to share it !
+## Build
+To build the app from the source code, you can use pyinstaller.
+On windows, the command is : 
+pyinstaller --onefile --name BeMyVoice --version-file=version.txt main.py
 
-You can also share that smile with me on https://ko-fi.com/jmagnette (but no obligation to ! )
+Then, next to the exe created, add the resources folder and the dependencies folder.

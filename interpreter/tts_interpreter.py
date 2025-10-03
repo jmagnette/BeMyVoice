@@ -8,6 +8,9 @@ class TtsInterpreter:
         self.interrupt = interrupt
 
     async def handle_entry(self, text_entry):
+        if len(text_entry) == 0:
+            return
+
         output_wave = await self.tts_engine.synthesize(text_entry)
         try:
             if not self.interrupt.must_stop:

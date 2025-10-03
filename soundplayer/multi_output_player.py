@@ -8,9 +8,9 @@ import logger
 
 class MultiOutputPlayer:
 
-    def __init__(self, configuration, interrupt):
+    def __init__(self, configuration, status):
         self.config = configuration
-        self.interrupt = interrupt
+        self.status = status
 
         # checking settings
         available_devices = self.get_audio_devices()
@@ -22,6 +22,11 @@ class MultiOutputPlayer:
 
         if is_in_error:
             raise "Issue with config regarding outputs"
+
+    async def change_output_devices(self, *device_names):
+        self.config.clear()
+        for name in device_names:
+            self.config.append(name)
 
     async def play_audio_async(self, wave_file_path):
         p = pyaudio.PyAudio()
@@ -46,7 +51,7 @@ class MultiOutputPlayer:
 
                 streams.append(self._create_and_read_audio_stream(wf, p, int(device_info['index'])))
 
-            while any(stream.is_active() for stream in streams) and not self.interrupt.must_stop:
+            while any(stream.is_active() for stream in streams) and not self.status.must_stop:
                 time.sleep(0.1)
 
             for stream in streams:
@@ -76,7 +81,7 @@ class MultiOutputPlayer:
 
     def _create_and_read_audio_stream(self, wf, p, device_index):
         def callback(in_data, frame_count, time_info, status):
-            if self.interrupt.must_stop:
+            if self.status.must_stop:
                 return (None, pyaudio.paComplete)
 
             data = wf.readframes(frame_count)

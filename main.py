@@ -24,7 +24,7 @@ from be_my_voice import BeMyVoice
 
 if __name__ == '__main__':
     try:
-        app = BeMyVoice(CONFIG_PATH)
+        app = BeMyVoice(CONFIG_PATH, os.path.join(base_path, "resources"))
         app.run_infinite()
     except Exception as ex:
         logger.log_error(ex)

@@ -21,7 +21,7 @@ class AppConfig:
             "x": 100,
             "y": 100,
             "width": 400,
-            "height": 100
+            "height": 40
         }
     }
 
@@ -56,3 +56,10 @@ class AppConfig:
         except FileNotFoundError:
             with open(self.config_path, "w") as f:
                 json.dump(self.DEFAULT_CONFIG, f, indent=4)
+
+    def save_config(self):
+        # Try to load existing settings
+        with open(self.config_path, "w") as f:
+            json.dump(self.loaded_config, f, indent=4)
+
+
