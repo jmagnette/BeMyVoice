@@ -16,12 +16,12 @@ VSVersionInfo(
         [
           StringStruct('CompanyName', 'J.Magnette'),
           StringStruct('FileDescription', 'BeMyVoice helps people to get a synthetic voice for every day use on their computer (discord, in game, ...)'),
-          StringStruct('FileVersion', '1.2.0.0'),
+          StringStruct('FileVersion', '1.2.1.0'),
           StringStruct('InternalName', 'main'),
           StringStruct('LegalCopyright', '© 2025 J.Magnette'),
           StringStruct('OriginalFilename', 'BeMyVoice.exe'),
           StringStruct('ProductName', 'BeMyVoice'),
-          StringStruct('ProductVersion', '1.2.0.0')
+          StringStruct('ProductVersion', '1.2.1.0')
         ]
       )
     ]),

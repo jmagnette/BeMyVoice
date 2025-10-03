@@ -2,7 +2,6 @@ import os
 import tempfile
 import edge_tts
 from pydub import AudioSegment
-import librosa
 import soundfile as sf
 
 import logger
@@ -48,7 +47,16 @@ class EdgeTTS:
     async def synthesize(self, text):
         temp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
         temp.close()
-        communicate = edge_tts.Communicate(text=text, voice=self.current_voice)
+
+        # Prepare text as ssml to support Pitch and Speed without postprocessing, that gives a weird result
+
+        # current speed is a multiplier from 0 to x, where 1 is 100%
+        rate = int(self.current_speed * 100.0 - 100)
+
+        # semitone to Hz modifier, 15Hz is taken as a rough approx
+        pitch = int(15 * self.current_pitch)
+
+        communicate = edge_tts.Communicate(text=text, rate=f"{rate:+d}%", pitch=f"{pitch:+d}Hz", voice=self.current_voice)
         await communicate.save(temp.name)
         audio = AudioSegment.from_mp3(temp.name)
         temp_wav = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
@@ -56,18 +64,6 @@ class EdgeTTS:
         audio.export(temp_wav.name, format="wav")
 
         os.remove(temp.name)
-
-        if self.current_speed != 1 or self.current_pitch != 0:
-            # apply speed and pitch changes
-            modified_wav, sampling_rate = librosa.load(temp_wav.name, sr=None, mono=False)
-
-            if self.current_pitch != 0:
-                modified_wav = librosa.effects.pitch_shift(modified_wav, sr=sampling_rate, n_steps=self.current_pitch)
-
-            if self.current_speed != 1:
-                modified_wav = librosa.effects.time_stretch(modified_wav, rate=self.current_speed)
-
-            sf.write(temp_wav.name, modified_wav, sampling_rate)
 
         return temp_wav.name
 
